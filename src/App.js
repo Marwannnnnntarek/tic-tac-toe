@@ -1,62 +1,60 @@
-import logo from './logo.svg';
+import React, { useState } from 'react';
 import './App.css';
-import { useState } from 'react';
 
 function Square({ value, onSquareClick }) {
-
-
-  return <button onClick={onSquareClick} className="square">{value}</button>;
+  return (
+    <button className="square" onClick={onSquareClick}>
+      {value}
+    </button>
+  );
 }
 
 function Board() {
-
   const [xIsNext, setXIsNext] = useState(true);
-
   const [squares, setSquares] = useState(Array(9).fill(null));
 
   const winner = calculateWinner(squares);
-
-  let status;
-  if (winner) {
-    status = "Winner: " + winner;
-  } else {
-    status = "Next player: " + (xIsNext ? "X" : "O");
-  }
+  const status = winner ? `Winner: ${winner}` : `Next player: ${xIsNext ? 'X' : 'O'}`;
 
   function handleClick(i) {
-    if (squares[i] || calculateWinner(squares)) {
-      return;
-    }
-    const nextSquares = squares.slice(); // Create a copy of the squares array
-    if (xIsNext) {
-      nextSquares[i] = "X"
-    } else {
-      nextSquares[i] = "O";
-    }
-
-    setSquares(nextSquares); // Update the state with the new squares array
-    setXIsNext(!xIsNext); // Toggle the next player
+    if (squares[i] || winner) return;
+    const nextSquares = squares.slice();
+    nextSquares[i] = xIsNext ? 'X' : 'O';
+    setSquares(nextSquares);
+    setXIsNext(!xIsNext);
   }
-  // use () => instead of use new 9 functions
+
+  function resetGame() {
+    setSquares(Array(9).fill(null));
+    setXIsNext(true);
+  }
+
+  const renderSquare = (i) => (
+    <Square key={i} value={squares[i]} onSquareClick={() => handleClick(i)} />
+  );
+
+  const renderRows = () => {
+    const rows = [];
+    for (let row = 0; row < 3; row++) {
+      const cols = [];
+      for (let col = 0; col < 3; col++) {
+        cols.push(renderSquare(row * 3 + col));
+      }
+      rows.push(
+        <div key={row} className="board-row">
+          {cols}
+        </div>
+      );
+    }
+    return rows;
+  };
+
   return (
-    <>
+    <div className="game">
       <div className="status">{status}</div>
-      <div className="board-row">
-        <Square onSquareClick={() => handleClick(0)} value={squares[0]} />
-        <Square onSquareClick={() => handleClick(1)} value={squares[1]} />
-        <Square onSquareClick={() => handleClick(2)} value={squares[2]} />
-      </div>
-      <div className="board-row">
-        <Square onSquareClick={() => handleClick(3)} value={squares[3]} />
-        <Square onSquareClick={() => handleClick(4)} value={squares[4]} />
-        <Square onSquareClick={() => handleClick(5)} value={squares[5]} />
-      </div>
-      <div className="board-row">
-        <Square onSquareClick={() => handleClick(6)} value={squares[6]} />
-        <Square onSquareClick={() => handleClick(7)} value={squares[7]} />
-        <Square onSquareClick={() => handleClick(8)} value={squares[8]} />
-      </div>
-    </>
+      {renderRows()}
+      <button onClick={resetGame} className="reset-button">Reset Game</button>
+    </div>
   );
 }
 
@@ -71,8 +69,7 @@ function calculateWinner(squares) {
     [0, 4, 8],
     [2, 4, 6],
   ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
+  for (let [a, b, c] of lines) {
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
       return squares[a];
     }
