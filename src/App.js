@@ -14,10 +14,19 @@ function Board() {
   const [squares, setSquares] = useState(Array(9).fill(null));
 
   const winner = calculateWinner(squares);
-  const status = winner ? `Winner: ${winner}` : `Next player: ${xIsNext ? 'X' : 'O'}`;
+  const isDraw = !winner && squares.every(square => square !== null);
+
+  let status;
+  if (winner) {
+    status = `Winner: ${winner}`;
+  } else if (isDraw) {
+    status = "It's a draw!";
+  } else {
+    status = `Next player: ${xIsNext ? 'X' : 'O'}`;
+  }
 
   function handleClick(i) {
-    if (squares[i] || winner) return;
+    if (squares[i] || winner || isDraw) return;
     const nextSquares = squares.slice();
     nextSquares[i] = xIsNext ? 'X' : 'O';
     setSquares(nextSquares);
